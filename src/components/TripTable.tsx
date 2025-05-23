@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -66,8 +67,19 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
   
   const getVehicleIcon = (type: VehicleType) => {
     switch(type) {
+      case 'picape-01':
+      case 'picape-02':
+      case 'caminhao-bau':
+      case 'pesado':
       case 'caminhao': return <Truck className="h-5 w-5" />;
+      case 'van-passageiro-01':
+      case 'van-passageiro-02':
+      case 'van-carga-01':
+      case 'furgao-carga-01':
       case 'van': return <Bus className="h-5 w-5" />;
+      case 'servico-01':
+      case 'servico-02':
+      case 'motocicleta-02':
       case 'carro': return <Car className="h-5 w-5" />;
     }
   };
