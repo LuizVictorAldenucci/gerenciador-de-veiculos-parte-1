@@ -1,18 +1,17 @@
 
-export type VehicleType = 'caminhao' | 'van' | 'carro';
+export type VehicleType = 'van-passageiro-tipo01' | 'servico-tipo01' | 'picape-tipo01' | 'van-carga-tipo01' | 'van-passageiro-tipo02' | 'picape-tipo02' | 'motocicleta-tipo02' | 'furgao-carga-tipo01' | 'caminhao-bau-34' | 'servico-tipo02' | 'pesado';
 
 export interface Stop {
   id: string;
-  location: string;
+  destination: string;
+  departureLocation: string;
   arrivalTime: string;
   departureTime: string;
-  kilometersAtDeparture: number;
   kilometersAtArrival: number;
 }
 
 export interface Trip {
   id: string;
-  driverName: string;
   vehicleType: VehicleType;
   vehiclePlate: string;
   date: string;
@@ -20,7 +19,5 @@ export interface Trip {
   departureTime: string;
   initialKilometers: number;
   destination: string;
-  arrivalTime: string;
-  finalKilometers: number;
   stops: Stop[];
 }
