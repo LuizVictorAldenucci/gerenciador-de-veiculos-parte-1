@@ -15,10 +15,12 @@ export interface Trip {
   id: string;
   vehicleType: VehicleType;
   vehiclePlate: string;
+  driverName: string;
   date: string;
   startLocation: string;
   departureTime: string;
   initialKilometers: number;
+  finalKilometers: number;
   destination: string;
   stops: Stop[];
 }
