@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -34,10 +33,10 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
   const filteredTrips = sortedTrips.filter(trip => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      trip.driverName.toLowerCase().includes(searchLower) || 
-      trip.vehiclePlate.toLowerCase().includes(searchLower) ||
-      trip.startLocation.toLowerCase().includes(searchLower) ||
-      trip.destination.toLowerCase().includes(searchLower)
+      (trip.driverName || '').toLowerCase().includes(searchLower) || 
+      (trip.vehiclePlate || '').toLowerCase().includes(searchLower) ||
+      (trip.startLocation || '').toLowerCase().includes(searchLower) ||
+      (trip.destination || '').toLowerCase().includes(searchLower)
     );
   });
   
