@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +16,12 @@ interface TripFormProps {
 const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
   const [vehicleType, setVehicleType] = useState<VehicleType>('carro');
   const [vehiclePlate, setVehiclePlate] = useState('');
+  const [driverName, setDriverName] = useState('');
   const [date, setDate] = useState('');
   const [startLocation, setStartLocation] = useState('');
   const [departureTime, setDepartureTime] = useState('');
   const [initialKilometers, setInitialKilometers] = useState<number>(0);
+  const [finalKilometers, setFinalKilometers] = useState<number>(0);
   const [destination, setDestination] = useState('');
   const [stops, setStops] = useState<Stop[]>([]);
   
@@ -50,8 +51,8 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!vehiclePlate || !date || !startLocation || !departureTime || 
-        !initialKilometers || !destination) {
+    if (!vehiclePlate || !driverName || !date || !startLocation || !departureTime || 
+        !initialKilometers || !finalKilometers || !destination) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
@@ -60,10 +61,12 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
       id: uuidv4(),
       vehicleType,
       vehiclePlate,
+      driverName,
       date,
       startLocation,
       departureTime,
       initialKilometers,
+      finalKilometers,
       destination,
       stops
     };
@@ -74,10 +77,12 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
     // Reset form
     setVehicleType('carro');
     setVehiclePlate('');
+    setDriverName('');
     setDate('');
     setStartLocation('');
     setDepartureTime('');
     setInitialKilometers(0);
+    setFinalKilometers(0);
     setDestination('');
     setStops([]);
   };
@@ -119,14 +124,24 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="date">Data</Label>
+          <Label htmlFor="driverName">Nome do Motorista</Label>
           <Input
-            id="date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
+            id="driverName"
+            value={driverName}
+            onChange={(e) => setDriverName(e.target.value)}
+            placeholder="Nome do motorista"
           />
         </div>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="date">Data</Label>
+        <Input
+          id="date"
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
       </div>
       
       <div className="space-y-2">
@@ -177,7 +192,7 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="departureTime">Horário de Saída</Label>
             <Input
@@ -196,6 +211,17 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
               value={initialKilometers}
               onChange={(e) => setInitialKilometers(Number(e.target.value))}
               placeholder="Km na saída"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="finalKilometers">Kilometragem Final</Label>
+            <Input
+              id="finalKilometers"
+              type="number"
+              value={finalKilometers}
+              onChange={(e) => setFinalKilometers(Number(e.target.value))}
+              placeholder="Km na chegada"
             />
           </div>
         </div>
