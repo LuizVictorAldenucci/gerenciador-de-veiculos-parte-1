@@ -1,12 +1,13 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trip, VehicleType } from '@/types/types';
-import { Car, Truck, Bus, ChevronDown, ChevronUp, Search } from "lucide-react";
+import { Car, Truck, Bus, ChevronDown, ChevronUp, Search, FileDown } from "lucide-react";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import RouteMap from './RouteMap';
+import * as XLSX from 'xlsx';
 
 interface TripTableProps {
   trips: Trip[];
@@ -75,18 +76,43 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
     return trip.finalKilometers - trip.initialKilometers;
   };
 
+  const exportToExcel = () => {
+    const exportData = trips.map(trip => ({
+      'Data': formatDate(trip.date),
+      'Tipo de Veículo': trip.vehicleType,
+      'Placa': trip.vehiclePlate,
+      'Horário de Saída': trip.departureTime,
+      'Km Inicial': trip.initialKilometers,
+      'Local de Saída': trip.startLocation,
+      'Destino': trip.destination,
+      'Distância Total (km)': calculateDistance(trip),
+      'Paradas': trip.stops.length
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Registros de Viagens');
+    XLSX.writeFile(wb, 'registros_viagens.xlsx');
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <Input
-            placeholder="Buscar por motorista, placa, origem ou destino..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2 flex-1">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="Buscar por placa, origem ou destino..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
         </div>
+        <Button onClick={exportToExcel} variant="outline" className="ml-4">
+          <FileDown className="h-4 w-4 mr-2" />
+          Exportar Excel
+        </Button>
       </div>
       
       <div className="rounded-md border">
@@ -142,41 +168,48 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
                     <TableRow>
                       <TableCell colSpan={9}>
                         <div className="p-4 bg-muted/50 rounded-md">
-                          <h4 className="font-medium mb-2">Detalhes da Viagem</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <h4 className="font-medium mb-4">Detalhes da Viagem</h4>
+                          
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
                             <div>
-                              <p className="text-sm font-medium text-muted-foreground">Origem</p>
-                              <p>{trip.startLocation}</p>
-                              <p className="text-sm">Saída: {trip.departureTime}</p>
-                              <p className="text-sm">Km inicial: {trip.initialKilometers}</p>
+                              <h5 className="font-medium mb-2">Informações da Viagem</h5>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground">Origem</p>
+                                  <p>{trip.startLocation}</p>
+                                  <p className="text-sm">Saída: {trip.departureTime}</p>
+                                  <p className="text-sm">Km inicial: {trip.initialKilometers}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground">Destino</p>
+                                  <p>{trip.destination}</p>
+                                  <p className="text-sm">Distância: {calculateDistance(trip)} km</p>
+                                </div>
+                              </div>
                             </div>
+                            
                             <div>
-                              <p className="text-sm font-medium text-muted-foreground">Destino</p>
-                              <p>{trip.destination}</p>
-                              <p className="text-sm">Chegada: {trip.arrivalTime}</p>
-                              <p className="text-sm">Km final: {trip.finalKilometers}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-muted-foreground">Resumo</p>
-                              <p>Distância: {calculateDistance(trip)} km</p>
+                              <h5 className="font-medium mb-2">Mapa da Rota</h5>
+                              <RouteMap trip={trip} />
                             </div>
                           </div>
                           
                           {trip.stops.length > 0 && (
-                            <div className="mt-4">
+                            <div>
                               <h4 className="font-medium mb-2">Paradas ({trip.stops.length})</h4>
                               <div className="space-y-2">
                                 {trip.stops.map((stop, index) => (
                                   <div key={stop.id} className="p-2 border rounded-md grid grid-cols-1 md:grid-cols-3 gap-2">
                                     <div>
-                                      <p className="text-sm font-medium">Parada {index + 1}: {stop.location}</p>
+                                      <p className="text-sm font-medium">Parada {index + 1}: {stop.destination}</p>
+                                      <p className="text-sm text-muted-foreground">Atividade: {stop.activity}</p>
                                     </div>
                                     <div>
                                       <p className="text-sm">Chegada: {stop.arrivalTime} - {stop.kilometersAtArrival} km</p>
-                                      <p className="text-sm">Saída: {stop.departureTime} - {stop.kilometersAtDeparture} km</p>
+                                      <p className="text-sm">Saída: {stop.departureTime}</p>
                                     </div>
                                     <div>
-                                      <p className="text-sm">Distância: {stop.kilometersAtDeparture - stop.kilometersAtArrival} km</p>
+                                      <p className="text-sm">Saída de: {stop.departureLocation}</p>
                                     </div>
                                   </div>
                                 ))}
