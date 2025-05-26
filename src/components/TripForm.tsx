@@ -22,6 +22,9 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
   const [departureTime, setDepartureTime] = useState('');
   const [initialKilometers, setInitialKilometers] = useState<number>(0);
   const [destination, setDestination] = useState('');
+  const [arrivalTime, setArrivalTime] = useState('');
+  const [finalKilometers, setFinalKilometers] = useState<number>(0);
+  const [activity, setActivity] = useState('');
   const [stops, setStops] = useState<Stop[]>([]);
   
   const vehicleOptions = [
@@ -47,7 +50,8 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
       departureLocation: previousDestination,
       arrivalTime: '',
       departureTime: '',
-      kilometersAtArrival: 0
+      kilometersAtArrival: 0,
+      activity: ''
     };
     setStops([...stops, newStop]);
   };
@@ -66,7 +70,7 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
     e.preventDefault();
     
     if (!vehiclePlate || !date || !startLocation || !departureTime || 
-        !initialKilometers || !destination) {
+        !initialKilometers || !destination || !arrivalTime || !finalKilometers || !activity) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
@@ -80,6 +84,9 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
       departureTime,
       initialKilometers,
       destination,
+      arrivalTime,
+      finalKilometers,
+      activity,
       stops
     };
     
@@ -94,6 +101,9 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
     setDepartureTime('');
     setInitialKilometers(0);
     setDestination('');
+    setArrivalTime('');
+    setFinalKilometers(0);
+    setActivity('');
     setStops([]);
   };
   
@@ -191,6 +201,18 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
           </div>
           
           <div className="space-y-2">
+            <Label htmlFor="arrivalTime">Horário de Chegada</Label>
+            <Input
+              id="arrivalTime"
+              type="time"
+              value={arrivalTime}
+              onChange={(e) => setArrivalTime(e.target.value)}
+            />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div className="space-y-2">
             <Label htmlFor="initialKilometers">Kilometragem Inicial</Label>
             <Input
               id="initialKilometers"
@@ -198,6 +220,27 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
               value={initialKilometers}
               onChange={(e) => setInitialKilometers(Number(e.target.value))}
               placeholder="Km na saída"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="finalKilometers">Kilometragem Final</Label>
+            <Input
+              id="finalKilometers"
+              type="number"
+              value={finalKilometers}
+              onChange={(e) => setFinalKilometers(Number(e.target.value))}
+              placeholder="Km na chegada"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="activity">Atividade Feita</Label>
+            <Input
+              id="activity"
+              value={activity}
+              onChange={(e) => setActivity(e.target.value)}
+              placeholder="Descreva a atividade"
             />
           </div>
         </div>
@@ -241,7 +284,7 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                 <div className="space-y-2">
                   <Label>Horário de Chegada</Label>
                   <Input
@@ -259,13 +302,24 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
                     onChange={(e) => handleStopChange(stop.id, 'departureTime', e.target.value)}
                   />
                 </div>
-                
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Kilometragem na Chegada</Label>
                   <Input
                     type="number"
                     value={stop.kilometersAtArrival}
                     onChange={(e) => handleStopChange(stop.id, 'kilometersAtArrival', Number(e.target.value))}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Atividade Feita</Label>
+                  <Input
+                    value={stop.activity}
+                    onChange={(e) => handleStopChange(stop.id, 'activity', e.target.value)}
+                    placeholder="Descreva a atividade"
                   />
                 </div>
               </div>

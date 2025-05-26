@@ -8,6 +8,7 @@ export interface Stop {
   arrivalTime: string;
   departureTime: string;
   kilometersAtArrival: number;
+  activity: string;
 }
 
 export interface Trip {
@@ -19,5 +20,8 @@ export interface Trip {
   departureTime: string;
   initialKilometers: number;
   destination: string;
+  arrivalTime: string;
+  finalKilometers: number;
+  activity: string;
   stops: Stop[];
 }

@@ -4,9 +4,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trip, VehicleType } from '@/types/types';
-import { Car, Truck, Bus, Bike, ChevronDown, ChevronUp, Search } from "lucide-react";
+import { Car, Truck, Bus, Bike, ChevronDown, ChevronUp, Search, FileSpreadsheet } from "lucide-react";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
+import { toast } from 'sonner';
 
 interface TripTableProps {
   trips: Trip[];
@@ -61,6 +63,55 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
       return dateString;
     }
   };
+
+  const calculateDistance = (trip: Trip) => {
+    return trip.finalKilometers - trip.initialKilometers;
+  };
+
+  const calculateDuration = (trip: Trip) => {
+    try {
+      const [depHour, depMin] = trip.departureTime.split(':').map(Number);
+      const [arrHour, arrMin] = trip.arrivalTime.split(':').map(Number);
+      
+      const depMinutes = depHour * 60 + depMin;
+      const arrMinutes = arrHour * 60 + arrMin;
+      
+      let duration = arrMinutes - depMinutes;
+      if (duration < 0) duration += 24 * 60; // Handle next day arrival
+      
+      const hours = Math.floor(duration / 60);
+      const minutes = duration % 60;
+      
+      return `${hours}h ${minutes}m`;
+    } catch {
+      return 'N/A';
+    }
+  };
+
+  const exportToExcel = () => {
+    const data = filteredTrips.map(trip => ({
+      'Data': formatDate(trip.date),
+      'Tipo de Veículo': getVehicleLabel(trip.vehicleType),
+      'Placa': trip.vehiclePlate,
+      'Origem': trip.startLocation,
+      'Destino': trip.destination,
+      'Saída': trip.departureTime,
+      'Chegada': trip.arrivalTime,
+      'Km Inicial': trip.initialKilometers,
+      'Km Final': trip.finalKilometers,
+      'Total Rodado (km)': calculateDistance(trip),
+      'Duração': calculateDuration(trip),
+      'Atividade': trip.activity,
+      'Paradas': trip.stops.length
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Registros de Viagens');
+    
+    XLSX.writeFile(wb, `registros-viagens-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+    toast.success('Arquivo Excel exportado com sucesso!');
+  };
   
   const getVehicleIcon = (type: VehicleType) => {
     if (type.includes('motocicleta')) return <Bike className="h-5 w-5" />;
@@ -88,8 +139,8 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1">
+      <div className="flex items-center justify-between">
+        <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             placeholder="Buscar por placa, origem ou destino..."
@@ -98,6 +149,10 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
             className="pl-8"
           />
         </div>
+        <Button onClick={exportToExcel} variant="outline" className="ml-4">
+          <FileSpreadsheet className="h-4 w-4 mr-2" />
+          Exportar Excel
+        </Button>
       </div>
       
       <div className="rounded-md border">
@@ -112,6 +167,8 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
               </TableHead>
               <TableHead>Origem</TableHead>
               <TableHead>Destino</TableHead>
+              <TableHead>Total Rodado</TableHead>
+              <TableHead>Duração</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -136,6 +193,8 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
                     <TableCell>{formatDate(trip.date)}</TableCell>
                     <TableCell>{trip.startLocation}</TableCell>
                     <TableCell>{trip.destination}</TableCell>
+                    <TableCell>{calculateDistance(trip)} km</TableCell>
+                    <TableCell>{calculateDuration(trip)}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="destructive" size="sm" onClick={() => onDeleteTrip(trip.id)}>
                         Excluir
@@ -145,7 +204,7 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
                   
                   {expandedTrip === trip.id && (
                     <TableRow>
-                      <TableCell colSpan={7}>
+                      <TableCell colSpan={9}>
                         <div className="p-4 bg-muted/50 rounded-md">
                           <h4 className="font-medium mb-2">Detalhes da Viagem</h4>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -163,7 +222,14 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
                             <div>
                               <p className="text-sm font-medium text-muted-foreground">Destino</p>
                               <p>{trip.destination}</p>
+                              <p className="text-sm">Chegada: {trip.arrivalTime}</p>
+                              <p className="text-sm">Km final: {trip.finalKilometers}</p>
                             </div>
+                          </div>
+                          
+                          <div className="mt-4">
+                            <p className="text-sm font-medium text-muted-foreground">Atividade Principal</p>
+                            <p>{trip.activity}</p>
                           </div>
                           
                           {trip.stops.length > 0 && (
@@ -171,7 +237,7 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
                               <h4 className="font-medium mb-2">Paradas ({trip.stops.length})</h4>
                               <div className="space-y-2">
                                 {trip.stops.map((stop, index) => (
-                                  <div key={stop.id} className="p-2 border rounded-md grid grid-cols-1 md:grid-cols-3 gap-2">
+                                  <div key={stop.id} className="p-2 border rounded-md grid grid-cols-1 md:grid-cols-4 gap-2">
                                     <div>
                                       <p className="text-sm font-medium">Parada {index + 1}</p>
                                       <p className="text-sm">De: {stop.departureLocation}</p>
@@ -183,6 +249,10 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
                                     </div>
                                     <div>
                                       <p className="text-sm">Km chegada: {stop.kilometersAtArrival}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium">Atividade:</p>
+                                      <p className="text-sm">{stop.activity}</p>
                                     </div>
                                   </div>
                                 ))}
@@ -197,7 +267,7 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4">
+                <TableCell colSpan={9} className="text-center py-4">
                   {searchTerm ? "Nenhuma viagem encontrada com esses critérios." : "Nenhuma viagem registrada."}
                 </TableCell>
               </TableRow>
