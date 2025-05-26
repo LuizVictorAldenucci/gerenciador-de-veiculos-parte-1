@@ -25,7 +25,7 @@ const Index = () => {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold text-center mb-8">Gestão de Frota de Veículos</h1>
+      <h1 className="text-3xl font-bold text-center mb-8">Gestão de Veículos PBH</h1>
       
       <Tabs defaultValue="view" className="max-w-5xl mx-auto">
         <TabsList className="grid w-full grid-cols-2 mb-8">
