@@ -24,4 +24,5 @@ export interface Trip {
   finalKilometers: number;
   activity: string;
   stops: Stop[];
+  isSubstitution: boolean;
 }

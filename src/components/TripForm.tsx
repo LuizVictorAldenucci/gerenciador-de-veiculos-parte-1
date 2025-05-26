@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PlusCircle, Trash2, Car, Truck, Bus, Bike } from "lucide-react";
 import { VehicleType, Stop, Trip } from '@/types/types';
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ interface TripFormProps {
 
 const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
   const [vehicleType, setVehicleType] = useState<VehicleType>('van-passageiro-tipo01');
+  const [isSubstitution, setIsSubstitution] = useState(false);
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [date, setDate] = useState('');
   const [startLocation, setStartLocation] = useState('');
@@ -78,6 +79,7 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
     const newTrip: Trip = {
       id: uuidv4(),
       vehicleType,
+      isSubstitution,
       vehiclePlate,
       date,
       startLocation,
@@ -95,6 +97,7 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
     
     // Reset form
     setVehicleType('van-passageiro-tipo01');
+    setIsSubstitution(false);
     setVehiclePlate('');
     setDate('');
     setStartLocation('');
@@ -163,6 +166,15 @@ const TripForm: React.FC<TripFormProps> = ({ onSaveTrip }) => {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox 
+          id="isSubstitution" 
+          checked={isSubstitution}
+          onCheckedChange={(checked) => setIsSubstitution(checked as boolean)}
+        />
+        <Label htmlFor="isSubstitution">É substituição</Label>
       </div>
       
       <div className="border-t pt-4">

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -79,6 +78,17 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
       let duration = arrMinutes - depMinutes;
       if (duration < 0) duration += 24 * 60; // Handle next day arrival
       
+      // Desconta 1 hora (60 minutos) se a viagem passou pelo horário de almoço (12:00-13:00)
+      const lunchStart = 12 * 60; // 12:00 em minutos
+      const lunchEnd = 13 * 60;   // 13:00 em minutos
+      
+      // Verifica se a viagem passou pelo horário de almoço
+      if (depMinutes < lunchEnd && arrMinutes > lunchStart) {
+        duration -= 60; // Desconta 1 hora de almoço
+      }
+      
+      if (duration < 0) duration = 0; // Evita duração negativa
+      
       const hours = Math.floor(duration / 60);
       const minutes = duration % 60;
       
@@ -93,6 +103,7 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
       'Data': formatDate(trip.date),
       'Tipo de Veículo': getVehicleLabel(trip.vehicleType),
       'Placa': trip.vehiclePlate,
+      'É Substituição': trip.isSubstitution ? 'Sim' : 'Não',
       'Origem': trip.startLocation,
       'Destino': trip.destination,
       'Saída': trip.departureTime,
@@ -212,6 +223,7 @@ const TripTable: React.FC<TripTableProps> = ({ trips, onDeleteTrip }) => {
                               <p className="text-sm font-medium text-muted-foreground">Veículo</p>
                               <p>{getVehicleLabel(trip.vehicleType)}</p>
                               <p className="text-sm">Placa: {trip.vehiclePlate}</p>
+                              <p className="text-sm">Substituição: {trip.isSubstitution ? 'Sim' : 'Não'}</p>
                             </div>
                             <div>
                               <p className="text-sm font-medium text-muted-foreground">Origem</p>
